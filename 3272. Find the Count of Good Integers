@@ -1,0 +1,68 @@
+//You are given two positive integers n and k.
+
+//An integer x is called k-palindromic if:
+
+/* x is a palindrome.
+x is divisible by k.
+An integer is called good if its digits can be rearranged to form a k-palindromic integer. For example, for k = 2, 2020 can be rearranged to form the k-palindromic integer 2002, whereas 1010 cannot be rearranged to form a k-palindromic integer.
+
+Return the count of good integers containing n digits.
+
+Note that any integer must not have leading zeros, neither before nor after rearrangement. For example, 1010 cannot be rearranged to form 101.*/
+
+Code in (JAVA)
+
+class Solution {
+
+    public long countGoodIntegers(int n, int k) {
+        Set<String> dict = new HashSet<>();
+        int base = (int) Math.pow(10, (n - 1) / 2);
+        int skip = n & 1;
+        for (int i = base; i < base * 10; i++) {
+            String s = Integer.toString(i);
+            s += new StringBuilder(s).reverse().substring(skip);
+            long palindromicInteger = Long.parseLong(s);
+            if (palindromicInteger % k == 0) {
+                char[] chars = s.toCharArray();
+                Arrays.sort(chars);
+                dict.add(new String(chars));
+            }
+        }
+
+        long[] factorial = new long[n + 1];
+        factorial[0] = 1;
+        for (int i = 1; i <= n; i++) {
+            factorial[i] = factorial[i - 1] * i;
+        }
+        long ans = 0;
+        for (String s : dict) {
+            int[] cnt = new int[10];
+            for (char c : s.toCharArray()) {
+                cnt[c - '0']++;
+            }
+            long tot = (n - cnt[0]) * factorial[n - 1];
+            for (int x : cnt) {
+                tot /= factorial[x];
+            }
+            ans += tot;
+        }
+
+        return ans;
+    }
+}
+
+
+
+Approach
+
+Generate n-digit palindromes:
+• For any palindrome of n digits, you only need to iterate over the first half (or a little more if odd n).
+• Mirror it to generate the full palindrome.
+• Check if it’s divisible by k.
+Track unique digit combinations:
+• For each valid k-palindromic integer, sort its digits and store it in a set to ensure uniqueness.
+Count permutations that are valid n-digit integers:
+• For each unique digit multiset:
+• Calculate the total number of permutations using multinomial coefficient:
+total = frac{(n - 1)! x (non-zero starting digits)}{product of factorials of digit counts}
+• Multiply by (n - cnt[0]) to exclude permutations starting with zero.
